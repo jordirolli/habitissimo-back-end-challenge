@@ -1,6 +1,9 @@
 /* IntelliJ IDE */
 .idea/
 
+/* custom */
+TODO.txt
+
 /* symfony project generator */
 /app/config/parameters.yml
 /build/
