@@ -5,6 +5,11 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+    TODO:
+        $category only allows [Pendiente / publicada /descartada]
+        $userId points to User.id
+**/
+/**
  * InvoiceRequest
  *
  * @ORM\Table(name="invoice_request")
@@ -50,11 +55,9 @@ class InvoiceRequest
     private $status;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="userId", type="string", length=255)
+     * @ORM\ManyToOne(targetEntity="User")
      */
-    private $userId;
+    private $user_id;
 
 
     /**
@@ -164,27 +167,27 @@ class InvoiceRequest
     }
 
     /**
-     * Set userId
+     * Set user_id
      *
-     * @param string $userId
+     * @param integer $user_id
      *
      * @return InvoiceRequest
      */
-    public function setUserId($userId)
+    public function setUserId($user_id)
     {
-        $this->userId = $userId;
+        $this->user_id = $user_id;
 
         return $this;
     }
 
     /**
-     * Get userId
+     * Get user_id
      *
-     * @return string
+     * @return integer
      */
     public function getUserId()
     {
-        return $this->userId;
+        return $this->user_id;
     }
 }
 
