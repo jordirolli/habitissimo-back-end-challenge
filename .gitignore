@@ -1,5 +1,5 @@
 /* IntelliJ IDE */
-.idea
+.idea/
 
 /* symfony project generator */
 /app/config/parameters.yml
