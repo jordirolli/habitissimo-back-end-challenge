@@ -5,18 +5,13 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
-    TODO:
-        $category only allows [Pendiente / publicada /descartada]
-        $userId points to User.id
-**/
-/**
  * InvoiceRequest
  *
  * @ORM\Table(name="invoice_request")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\InvoiceRequestRepository")
  */
-class InvoiceRequest
-{
+class InvoiceRequest {
+
     /**
      * @var int
      *
@@ -43,18 +38,21 @@ class InvoiceRequest
     /**
      * @var string
      *
-     * @ORM\Column(name="category", type="string", length=255, nullable=true)
+     * @ORM\Column(name="category", type="string", length=20, nullable=true)
      */
     private $category;
 
     /**
-     * @var string
+     * @var integer
      *
-     * @ORM\Column(name="status", type="string", length=255)
+     * @ORM\Column(name="state", type="integer", length=2)
      */
-    private $status;
+    private $state;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="user_id", type="integer")
      * @ORM\ManyToOne(targetEntity="User")
      */
     private $user_id;
@@ -143,27 +141,27 @@ class InvoiceRequest
     }
 
     /**
-     * Set status
+     * Set state
      *
-     * @param string $status
+     * @param integer $state
      *
      * @return InvoiceRequest
      */
-    public function setStatus($status)
+    public function setState($state)
     {
-        $this->status = $status;
+        $this->state = $state;
 
         return $this;
     }
 
     /**
-     * Get status
+     * Get state
      *
-     * @return string
+     * @return integer
      */
-    public function getStatus()
+    public function getState()
     {
-        return $this->status;
+        return $this->state;
     }
 
     /**
