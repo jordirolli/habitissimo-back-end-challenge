@@ -73,7 +73,7 @@ class InvoiceRequestController extends FOSRestController {
             }
             $title = ($request->get('title') != null)? $request->get('title') : $invoice->getTitle();
             $description = ($request->get('description') != null)? $request->get('description') : $invoice->getDescription();
-            $category = ($request->get('$category') != null)? InvoiceCategory::fromName($request->get('category')) : $invoice->getCategory();
+            $category = ($request->get('category') != null)? InvoiceCategory::fromName($request->get('category')) : $invoice->getCategory();
             if ( $invoice->getTitle() != $title || $invoice->getDescription() != $description || $invoice->getCategory() != $category) {
                 $invoice->setTitle($title);
                 $invoice->setDescription($description);
@@ -98,7 +98,18 @@ class InvoiceRequestController extends FOSRestController {
             }
         }
         if (!empty($missingFields)) throw new NotAcceptableHttpException("Missing the following mandatory fields: \n" . $missingFields);
-        if (!$this->validateCategory($request->get('category'))) throw new NotAcceptableHttpException("Invalid category. Must be on of: " . InvoiceCategory::getConstants());
+        if (!$this->validateCategory($request->get('category'))) {
+            $message = 'Invalid category. Must be on of: [';
+            $validCategories = InvoiceCategory::getConstants();
+            foreach ($validCategories as $validCategory) {
+                $message = $message . "$validCategory";
+                 if ($validCategory != end($validCategories)) {
+                    $message = $message . ', ';
+                 }
+            }
+            $message = $message . ']';
+            throw new NotAcceptableHttpException($message);
+        }
     }
 
     private function validateCategory($category) {
@@ -106,12 +117,10 @@ class InvoiceRequestController extends FOSRestController {
     }
 
     private function retrieveUser($email, $phone, $address) {
-        $user = $this->getDoctrine()->getRepository('AppBundle:User')->findOneByEmail($email);
         $logger = $this->get('logger');
-        $logger->info('retrieveUser(): Found user with id: ' . $user->getId());
+        $user = $this->getDoctrine()->getRepository('AppBundle:User')->findOneByEmail($email);
         if ($user === null) {
             /* create new user */
-            $logger = $this->get('logger');
             $logger->info('User has not been found. Creating new user.');
             $user = new User;
             $user->setEmail($email);
@@ -128,6 +137,9 @@ class InvoiceRequestController extends FOSRestController {
             $em = $this->getDoctrine()->getManager();
             $em->flush();
             $logger->info('retrieveUser(): Existing user with id: ' . $user->getId() . ' has been updated.');
+        } else {
+            $logger->info('retrieveUser(): Found user with id: ' . $user->getId(). ', it does not require update.');
+
         }
         return $user;
     }

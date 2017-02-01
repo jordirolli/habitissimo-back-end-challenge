@@ -6,6 +6,7 @@ TODO.txt
 
 /* symfony project generator */
 /app/config/parameters.yml
+/app/config/parameters_test.yml
 /build/
 /phpunit.xml
 /var/*
