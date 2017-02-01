@@ -59,6 +59,37 @@ class InvoiceRequestController extends FOSRestController {
         }
     }
 
+    /**
+    * @Rest\Put("/api/invoice/{id}")
+    */
+    public function putAction($id, Request $request) {
+        $invoice = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findOneById($id);
+        if ($invoice != null) {
+            if ($invoice->getState() != InvoiceState::Pending) {
+                return new View("The given invoice can not be updated because it has already been published.", Response::HTTP_NOT_ACCEPTABLE);
+            }
+            if (!is_null($request->get('description')) && empty($request->get('description'))) {
+                return new View("The description is a mandatory field.", Response::HTTP_NOT_ACCEPTABLE);
+            }
+            $title = ($request->get('title') != null)? $request->get('title') : $invoice->getTitle();
+            $description = ($request->get('description') != null)? $request->get('description') : $invoice->getDescription();
+            $category = ($request->get('$category') != null)? InvoiceCategory::fromName($request->get('category')) : $invoice->getCategory();
+            if ( $invoice->getTitle() != $title || $invoice->getDescription() != $description || $invoice->getCategory() != $category) {
+                $invoice->setTitle($title);
+                $invoice->setDescription($description);
+                $invoice->setCategory($category);
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($invoice);
+                $em->flush();
+                return new View("Invoice successfully updated.", Response::HTTP_OK);
+            } else {
+                return new View("Invoice does not require update.", Response::HTTP_OK);
+            }
+        } else {
+            return new View("Invoice with id '$id' not found.", Response::HTTP_NOT_FOUND);
+        }
+    }
+
     private function validateRequest(Request $request) {
         $missingFields = "";
         foreach (InvoiceRequestController::$mandatoryFields as $mandatoryField) {
