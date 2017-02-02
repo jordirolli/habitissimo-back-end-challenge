@@ -355,4 +355,54 @@ class InvoiceRequestControllerTest extends WebTestCase {
         $updatedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneById($pendingInvoice->getId());
         $this->assertEquals(InvoiceState::Published,$pendingInvoice->getState());
     }
+
+    public function testKODiscardDiscardedInvoice() {
+        $client = static::createClient();
+        $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $discardedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneByState(InvoiceState::Discarded);
+
+        $client->request(
+            'POST',
+            '/api/invoices/' . $discardedInvoice->getId() . '/action?type=discard'
+        );
+
+        /* Not modified */
+        $this->assertEquals(304, $client->getResponse()->getStatusCode());
+    }
+
+    public function testOKDiscardPendingInvoice() {
+        $client = static::createClient();
+        $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $pendingInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneByState(InvoiceState::Pending);
+
+        $client->request(
+            'POST',
+            '/api/invoices/' . $pendingInvoice->getId() . '/action?type=discard'
+        );
+
+        /* Valid response */
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals('"The invoice has successfully been discarded."', $client->getResponse()->getContent());
+        /* The invoice has been properly updated */
+        $updatedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneById($pendingInvoice->getId());
+        $this->assertEquals(InvoiceState::Discarded, $pendingInvoice->getState());
+    }
+
+    public function testOKDiscardPublishedInvoice() {
+        $client = static::createClient();
+        $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $publishedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneByState(InvoiceState::Published);
+
+        $client->request(
+            'POST',
+            '/api/invoices/' . $publishedInvoice->getId() . '/action?type=discard'
+        );
+
+        /* Valid response */
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals('"The invoice has successfully been discarded."', $client->getResponse()->getContent());
+        /* The invoice has been properly updated */
+        $updatedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneById($publishedInvoice->getId());
+        $this->assertEquals(InvoiceState::Discarded, $publishedInvoice->getState());
+    }
 }

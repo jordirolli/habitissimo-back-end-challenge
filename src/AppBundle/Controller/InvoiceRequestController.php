@@ -117,6 +117,19 @@ class InvoiceRequestController extends FOSRestController {
                             break;
                     }
                 case 'discard':
+                    switch($invoice->getState()) {
+                        case InvoiceState::Pending:
+                        case InvoiceState::Published:
+                            $invoice->setState(InvoiceState::Discarded);
+                            $em = $this->getDoctrine()->getManager();
+                            $em->persist($invoice);
+                            $em->flush();
+                            return new View("The invoice has successfully been discarded.", Response::HTTP_OK);
+                            break;
+                        case InvoiceState::Discarded:
+                            return new View("The invoice is already published.", Response::HTTP_NOT_MODIFIED);
+                            break;
+                    }
                     break;
             }
          } else {
