@@ -13,22 +13,42 @@ class LoadInvoiceRequestData extends AbstractFixture implements OrderedFixtureIn
 
     public function load(ObjectManager $manager) {
 
-        /* Invoice 1: It does have all the fields. State: 'Pending'*/
-        $invoice1 = new InvoiceRequest();
-        $invoice1->setTitle('Fixture 1 title');
-        $invoice1->setDescription('Fixture 1 description');
-        $invoice1->setCategory(InvoiceCategory::Construction);
-        $invoice1->setState(InvoiceState::Pending);
-        $invoice1->setUserId($this->getReference('test-user')->getId());
-        $manager->persist($invoice1);
+        /* Invoice 1: Partial 'Pending' invoice */
+        $partialPendingInvoice = new InvoiceRequest();
+        $partialPendingInvoice->setDescription('Partial pending invoice description');
+        $partialPendingInvoice->setState(InvoiceState::Pending);
+        $partialPendingInvoice->setUserId($this->getReference('test-user')->getId());
+        $manager->persist($partialPendingInvoice);
         $manager->flush();
 
-        /* Invoice 2: It does have mandatory fields. State: 'Published'*/
-        $invoice2 = new InvoiceRequest();
-        $invoice2->setDescription('Fixture 2 description');
-        $invoice2->setState(InvoiceState::Published);
-        $invoice2->setUserId($this->getReference('test-user')->getId());
-        $manager->persist($invoice2);
+        /* Invoice 2: Complete 'Pending' invoice */
+        $completePendingInvoice = new InvoiceRequest();
+        $completePendingInvoice->setTitle('Complete pending invoice title');
+        $completePendingInvoice->setDescription('Complete pending invoice description');
+        $completePendingInvoice->setCategory(InvoiceCategory::Construction);
+        $completePendingInvoice->setState(InvoiceState::Pending);
+        $completePendingInvoice->setUserId($this->getReference('test-user')->getId());
+        $manager->persist($completePendingInvoice);
+        $manager->flush();
+
+        /* Invoice 3: Complete 'Published' invoice */
+        $completePublishedInvoice = new InvoiceRequest();
+        $completePublishedInvoice->setTitle('Complete published invoice title');
+        $completePublishedInvoice->setDescription('Complete published invoice description');
+        $completePublishedInvoice->setCategory(InvoiceCategory::Construction);
+        $completePublishedInvoice->setState(InvoiceState::Published);
+        $completePublishedInvoice->setUserId($this->getReference('test-user')->getId());
+        $manager->persist($completePublishedInvoice);
+        $manager->flush();
+
+        /* Invoice 4: Complete 'Discarded' invoice */
+        $completeDiscardedInvoice = new InvoiceRequest();
+        $completeDiscardedInvoice->setTitle('Complete published invoice title');
+        $completeDiscardedInvoice->setDescription('Complete published invoice description');
+        $completeDiscardedInvoice->setCategory(InvoiceCategory::Construction);
+        $completeDiscardedInvoice->setState(InvoiceState::Discarded);
+        $completeDiscardedInvoice->setUserId($this->getReference('test-user')->getId());
+        $manager->persist($completeDiscardedInvoice);
         $manager->flush();
     }
 

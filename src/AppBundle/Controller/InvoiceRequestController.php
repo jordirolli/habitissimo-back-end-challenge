@@ -20,7 +20,7 @@ class InvoiceRequestController extends FOSRestController {
     static $mandatoryFields = ['description','email','phone','address'];
 
     /**
-     * @Rest\Get("api/invoice")
+     * @Rest\Get("api/invoices")
      */
     public function getAction() {
         $restresult = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findAll();
@@ -31,7 +31,7 @@ class InvoiceRequestController extends FOSRestController {
     }
 
     /**
-    * @Rest\Post("/api/invoice")
+    * @Rest\Post("/api/invoices")
     */
     public function postAction(Request $request) {
         try {
@@ -60,7 +60,7 @@ class InvoiceRequestController extends FOSRestController {
     }
 
     /**
-    * @Rest\Put("/api/invoice/{id}")
+    * @Rest\Put("/api/invoices/{id}")
     */
     public function putAction($id, Request $request) {
         $invoice = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findOneById($id);
@@ -83,11 +83,45 @@ class InvoiceRequestController extends FOSRestController {
                 $em->flush();
                 return new View("Invoice successfully updated.", Response::HTTP_OK);
             } else {
-                return new View("Invoice does not require update.", Response::HTTP_OK);
+                return new View("Invoice does not require update.", Response::HTTP_NOT_MODIFIED);
             }
         } else {
             return new View("Invoice with id '$id' not found.", Response::HTTP_NOT_FOUND);
         }
+    }
+
+    /**
+    * @Rest\Post("/api/invoices/{id}/action")
+    */
+    public function postActionAction($id, Request $request) {
+         $invoice = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findOneById($id);
+         if ($invoice != null) {
+            switch($request->get('type')) {
+                case 'publish':
+                    switch($invoice->getState()) {
+                        case InvoiceState::Discarded:
+                            return new View("Discarded invoices can not be re-published.", Response::HTTP_NOT_ACCEPTABLE);
+                            break;
+                        case InvoiceState::Published:
+                            return new View("The invoice is already published.", Response::HTTP_NOT_MODIFIED);
+                            break;
+                        case InvoiceState::Pending:
+                            if (empty($invoice->getTitle()) || empty($invoice->getCategory())) {
+                                return new View("The invoice should have both title and category in order to be published.", Response::HTTP_NOT_ACCEPTABLE);
+                            }
+                            $invoice->setState(InvoiceState::Published);
+                            $em = $this->getDoctrine()->getManager();
+                            $em->persist($invoice);
+                            $em->flush();
+                            return new View("Invoice successfully published.", Response::HTTP_OK);
+                            break;
+                    }
+                case 'discard':
+                    break;
+            }
+         } else {
+            return new View("Invoice with id '$id' not found.", Response::HTTP_NOT_FOUND);
+         }
     }
 
     private function validateRequest(Request $request) {
