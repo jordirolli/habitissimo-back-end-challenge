@@ -41,6 +41,66 @@ class InvoiceRequestControllerTest extends WebTestCase {
         $this->assertEquals(4,sizeof($result));
     }
 
+    public function testKOGetInvoicesFilteredByEmail() {
+        $client = static::createClient();
+
+        $client->request('GET', '/api/invoices?email=non@existing.com');
+
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Content-Type',
+                'application/json'
+            ),
+            'the "Content-Type" header is "application/json"' // optional message shown on failure
+        );
+        /* Not found */
+        $this->assertEquals(404, $client->getResponse()->getStatusCode());
+        $this->assertEquals('"No invoices found."',$client->getResponse()->getContent());
+    }
+
+    public function testOKGetInvoicesFilteredByEmail() {
+        $client = static::createClient();
+
+        $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $invoices = $manager->getRepository('AppBundle:InvoiceRequest')->findByEmail('test@test.com');
+
+        $client->request('GET', '/api/invoices?email=test@test.com');
+
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Content-Type',
+                'application/json'
+            ),
+            'the "Content-Type" header is "application/json"' // optional message shown on failure
+        );
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $result = json_decode($client->getResponse()->getContent());
+        $this->assertEquals(2,sizeof($result));
+    }
+
+    public function testOKGetInvoicesFilteredByEmailWithCustomPagination() {
+        $client = static::createClient();
+
+        $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        $invoices = $manager->getRepository('AppBundle:InvoiceRequest')->findByEmail('test@test.com');
+
+        $client->request('GET', '/api/invoices?email=test@test.com&limit=1');
+
+        // Assert that the "Content-Type" header is "application/json"
+        $this->assertTrue(
+            $client->getResponse()->headers->contains(
+                'Content-Type',
+                'application/json'
+            ),
+            'the "Content-Type" header is "application/json"' // optional message shown on failure
+        );
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $result = json_decode($client->getResponse()->getContent());
+        $this->assertEquals(1,sizeof($result));
+    }
+
     public function testKOCreateInvoiceWithoutMandatoryFields() {
         $client = static::createClient();
 
@@ -92,8 +152,6 @@ class InvoiceRequestControllerTest extends WebTestCase {
     }
 
     public function testOKCreateInvoiceWithExistingUser() {
-        /* TODO use fixture reference */
-        // new LoadUserData()->getReference('test-user');
         $client = static::createClient();
 
         $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
@@ -123,7 +181,7 @@ class InvoiceRequestControllerTest extends WebTestCase {
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         /* There should only be one user in the DB */
         $users = $manager->getRepository('AppBundle:User')->findAll();
-        $this->assertEquals(1, sizeof($users));
+        $this->assertEquals(2, sizeof($users));
         /* The user email and address should be updated */
         $this->assertEquals(666666666, $users[0]->getPhone());
         $this->assertEquals('new address', $users[0]->getAddress());
@@ -158,11 +216,11 @@ class InvoiceRequestControllerTest extends WebTestCase {
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         /* There should only be one user in the DB */
         $users = $manager->getRepository('AppBundle:User')->findAll();
-        $this->assertEquals(2, sizeof($users));
+        $this->assertEquals(3, sizeof($users));
         /* The new user has the data posted to the service  */
-        $this->assertEquals('new@user.com', $users[1]->getEmail());
-        $this->assertEquals(666666666, $users[1]->getPhone());
-        $this->assertEquals('new address', $users[1]->getAddress());
+        $this->assertEquals('new@user.com', $users[2]->getEmail());
+        $this->assertEquals(666666666, $users[2]->getPhone());
+        $this->assertEquals('new address', $users[2]->getAddress());
     }
 
     public function testKOUpdateNonExistingInvoice() {
@@ -308,7 +366,11 @@ class InvoiceRequestControllerTest extends WebTestCase {
     public function testKOPendingInvoiceWithoutTitle() {
         $client = static::createClient();
         $manager = $client->getContainer()->get('doctrine.orm.entity_manager');
-        $publishedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneByTitle(null);
+        $publishedInvoice = $manager->getRepository('AppBundle:InvoiceRequest')->findOneBy(
+            array(
+                'title' => null,
+                'state' => InvoiceState::Pending
+            ));
 
         $client->request(
             'POST',

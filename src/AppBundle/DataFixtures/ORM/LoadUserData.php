@@ -17,10 +17,17 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface {
         $user->setPhone('123456789');
         $user->setAddress('Test user address');
         $manager->persist($user);
+
+        /* Create another test user */
+        $user2 = new User;
+        $user2->setEmail('test2@test.com');
+        $user2->setPhone('123456789');
+        $user2->setAddress('Test user 2 address');
+        $manager->persist($user2);
         $manager->flush();
 
-        $this->addReference('test-user', $user);
-
+        $this->addReference('test-user-1', $user);
+        $this->addReference('test-user-2', $user2);
     }
 
     public function getOrder() {

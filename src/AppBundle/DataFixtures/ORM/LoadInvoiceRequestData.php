@@ -17,7 +17,7 @@ class LoadInvoiceRequestData extends AbstractFixture implements OrderedFixtureIn
         $partialPendingInvoice = new InvoiceRequest();
         $partialPendingInvoice->setDescription('Partial pending invoice description');
         $partialPendingInvoice->setState(InvoiceState::Pending);
-        $partialPendingInvoice->setUserId($this->getReference('test-user')->getId());
+        $partialPendingInvoice->setUserId($this->getReference('test-user-1')->getId());
         $manager->persist($partialPendingInvoice);
         $manager->flush();
 
@@ -27,7 +27,7 @@ class LoadInvoiceRequestData extends AbstractFixture implements OrderedFixtureIn
         $completePendingInvoice->setDescription('Complete pending invoice description');
         $completePendingInvoice->setCategory(InvoiceCategory::Construction);
         $completePendingInvoice->setState(InvoiceState::Pending);
-        $completePendingInvoice->setUserId($this->getReference('test-user')->getId());
+        $completePendingInvoice->setUserId($this->getReference('test-user-1')->getId());
         $manager->persist($completePendingInvoice);
         $manager->flush();
 
@@ -37,7 +37,7 @@ class LoadInvoiceRequestData extends AbstractFixture implements OrderedFixtureIn
         $completePublishedInvoice->setDescription('Complete published invoice description');
         $completePublishedInvoice->setCategory(InvoiceCategory::Construction);
         $completePublishedInvoice->setState(InvoiceState::Published);
-        $completePublishedInvoice->setUserId($this->getReference('test-user')->getId());
+        $completePublishedInvoice->setUserId($this->getReference('test-user-2')->getId());
         $manager->persist($completePublishedInvoice);
         $manager->flush();
 
@@ -47,7 +47,7 @@ class LoadInvoiceRequestData extends AbstractFixture implements OrderedFixtureIn
         $completeDiscardedInvoice->setDescription('Complete published invoice description');
         $completeDiscardedInvoice->setCategory(InvoiceCategory::Construction);
         $completeDiscardedInvoice->setState(InvoiceState::Discarded);
-        $completeDiscardedInvoice->setUserId($this->getReference('test-user')->getId());
+        $completeDiscardedInvoice->setUserId($this->getReference('test-user-2')->getId());
         $manager->persist($completeDiscardedInvoice);
         $manager->flush();
     }

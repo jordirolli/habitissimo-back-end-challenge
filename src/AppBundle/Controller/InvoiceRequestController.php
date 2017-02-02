@@ -18,14 +18,23 @@ use AppBundle\Entity\User;
 class InvoiceRequestController extends FOSRestController {
 
     static $mandatoryFields = ['description','email','phone','address'];
+    const PAGE_SIZE = 10;
+    const PAGE_SIZE_MAX = 50;
 
     /**
      * @Rest\Get("api/invoices")
      */
-    public function getAction() {
-        $restresult = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findAll();
-        if ($restresult === null) {
-            return new View("there are no users exist", Response::HTTP_NOT_FOUND);
+    public function getAction(Request $request) {
+        /* page size */
+        $limit = (is_numeric($request->get('limit')) && $request->get('limit') <= self::PAGE_SIZE_MAX) ? $request->get('limit') : self::PAGE_SIZE;
+        $start = is_numeric($request->get('start')) ? $request->get('start') : 0;
+        if ($request->get('email')) {
+            $restresult = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findByEmail($request->get('email'), $start, $limit);
+        } else {
+            $restresult = $this->getDoctrine()->getRepository('AppBundle:InvoiceRequest')->findAll();
+        }
+        if (empty($restresult)) {
+            return new View("No invoices found.", Response::HTTP_NOT_FOUND);
         }
         return $restresult;
     }
